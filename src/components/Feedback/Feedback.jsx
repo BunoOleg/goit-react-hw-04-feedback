@@ -1,4 +1,4 @@
-import {useReducer} from 'react';
+import {useState} from 'react';
 import styles from './Feedback.module.css';
 
 import Statistic from '../Statistics';
@@ -6,51 +6,55 @@ import FeedbackOptions from '../FeedbackOptions';
 import Notification from '../Notification';
 import Section from '../Section';
 
-const initialState = {goodCoffee: 0, neutralCoffee:0, badCoffee:0};
+export const Feedback = () => {
+	const [good, setGood] = useState(0);
+	const [neutral, setNeutral] = useState(0);
+	const [bad, setBad] = useState(0);
 
-function reducer (state, action) {
-  switch (action.type) {
-    case 'Good':
-      return {...state, goodCoffee:state.goodCoffee + action.payloade};
-    case 'Neutral':
-      return {...state, neutralCoffee:state.neutralCoffee + action.payloade};
-    case 'Bad':
-      return {...state, badCoffee:state.badCoffee + action.payloade};
-    default:
-      throw new Error();
-  }
-} 
+	const handleChangeStats = event => {
+		const { name } = event.currentTarget;
 
-const Feedback = () => {
+		switch (name) {
+			case 'good':
+				setGood(good + 1);
+				break;
+			case 'neutral':
+				setNeutral(neutral + 1);
+				break;
+			case 'bad':
+				setBad(bad + 1);
+				break;
+			default:
+				return;
+		}
+		countTotalFeedback();
+		countPositiveFeedbackPercentage();
+	};
 
-  const [state, dispatch] = useReducer(reducer, initialState);
+	const countTotalFeedback = () => {
+		return good + neutral + bad;
+	};
 
-  const handleChangeStats = event => dispatch({type: event.target.name, payloade: 1});
-
-  const countTotalFeedback = () => state.goodCoffee + state.neutralCoffee + state.badCoffee;
-
-  const countPositiveFeedbackPercentage = () => 
-    countTotalFeedback() 
-      ? Math.round(state.goodCoffee/countTotalFeedback()*100) 
-      : "0"; 
-
-  const buttons = ['Good', 'Neutral', 'Bad'];
+	const countPositiveFeedbackPercentage = () => {
+		return parseInt((good / countTotalFeedback()) * 100);
+  };
+  
 
   return (
     <div className={styles.container}>
       <h1 className={styles.title}>Please leave feedback</h1>
       <FeedbackOptions
-        buttonsName={buttons}
+        buttonsName={['good', 'neutral', 'bad']}
         onLeaveFeedback={handleChangeStats}
       />
       <Section 
         title="Statistics"
         >        
-        {countTotalFeedback() ? 
+        {good !== 0 || neutral !== 0 || bad !== 0 ? 
           <Statistic 
-            good={state.goodCoffee} 
-            neutral={state.neutralCoffee}
-            bad={state.badCoffee}
+            good={good} 
+            neutral={neutral}
+            bad={bad}
             total={countTotalFeedback()}
             positivePercentage={countPositiveFeedbackPercentage()}   
           />
